@@ -42,10 +42,7 @@ quads_buffer = compushady.Buffer(
 shader = hlsl.compile("""
 struct data
 {
-    int pos_x;
-    int pos_y;
-    int width;
-    int height;
+    uint4 paddle;
     uint4 color;
 };
 StructuredBuffer<data> quads : register(t0);
@@ -55,14 +52,13 @@ RWTexture2D<float4> target : register(u0);
 void main(int3 tid : SV_DispatchThreadID)
 {
     data quad = quads[tid.z];
-    quad.color = quads[tid.z].color;
-    if (tid.x > quad.pos_x + quad.width)
+    if (tid.x > quad.paddle[0] + quad.paddle[2])
         return;
-    if (tid.x < quad.pos_x)
+    if (tid.x < quad.paddle[0])
         return;
-    if (tid.y < quad.pos_y)
+    if (tid.y < quad.paddle[1])
         return;
-    if (tid.y > quad.pos_y + quad.height)
+    if (tid.y > quad.paddle[1] + quad.paddle[3])
         return;
 
     target[tid.xy] = float4(quad.color);
